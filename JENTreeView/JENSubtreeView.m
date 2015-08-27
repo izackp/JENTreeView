@@ -101,8 +101,8 @@
 
 -(CGSize)layoutGraph {
     NSArray *subviews                   = self.subviews;
-    CGFloat maxWidth                    = 0.0;
-    CGFloat minWidth                    = CGFLOAT_MAX;
+    CGFloat maxHeight                   = 0.0;
+    CGFloat minHeight                   = CGFLOAT_MAX;
     NSUInteger subtreeViewCount         = 0;
     CGSize nodeViewSize                 = self.nodeView.frame.size;
     CGPoint subtreeOrigion              = CGPointMake(0.0, 0.0);
@@ -113,11 +113,10 @@
         if([subview isKindOfClass:[JENSubtreeView class]]) {
             CGSize subViewSize = [((JENSubtreeView*)subview) layoutGraph];
             
-            maxWidth = MAX(maxWidth, subViewSize.width);
-            minWidth = MIN(minWidth, subViewSize.width);
+            maxHeight = MAX(maxHeight, subViewSize.height);
+            minHeight = MIN(minHeight, subViewSize.height);
             
-            [subViewSizes setObject:[NSValue valueWithCGSize:subViewSize]
-                             forKey:@(subview.hash)];
+            [subViewSizes setObject:[NSValue valueWithCGSize:subViewSize] forKey:@(subview.hash)];
         }
     }
 
@@ -129,12 +128,12 @@
             CGSize subtreeViewSize = [subViewSizes[@(subview.hash)] CGSizeValue];
             
             if(self.invertedLayout) {
-                subtreeOrigion.x = 0.0;
-            } else subtreeOrigion.x = nodeViewSize.width + self.parentChildSpacing;
+                subtreeOrigion.y = 0.0;
+            } else subtreeOrigion.y = nodeViewSize.height + self.parentChildSpacing;
 
             if((self.invertedLayout && !self.alignChildren) ||
                (!self.invertedLayout && self.alignChildren)) {
-                subtreeOrigion.x += (maxWidth - subtreeViewSize.width);
+                subtreeOrigion.y += (maxHeight - subtreeViewSize.height);
             }
 
             CGRect frame    = subview.frame;
@@ -142,7 +141,7 @@
             subview.frame   = frame;
             
             // for next run
-            subtreeOrigion.y += subtreeViewSize.height + self.siblingSpacing;
+            subtreeOrigion.x += subtreeViewSize.width + self.siblingSpacing;
         }
     }
     
@@ -151,36 +150,34 @@
     
     if(subtreeViewCount > 0) {
         // *** NODE VIEW *** //
-        selfTargetSize  = CGSizeMake(nodeViewSize.width + self.parentChildSpacing + maxWidth,
-                                     MAX(subtreeOrigion.y - self.siblingSpacing,
-                                         nodeViewSize.height));
+        
+//        float width = nodeViewSize.width + self.parentChildSpacing + maxWidth;
+//        float height = MAX(subtreeOrigion.y - self.siblingSpacing, nodeViewSize.height);
+        float width = MAX(subtreeOrigion.x - self.siblingSpacing, nodeViewSize.width);
+        float height = nodeViewSize.height + self.parentChildSpacing + maxHeight;
+        selfTargetSize  = CGSizeMake(width, height);
     
         CGRect frame    = self.frame;
         frame.size      = selfTargetSize;
         self.frame      = frame;
         
-        nodeViewFrame.origin = CGPointMake(self.invertedLayout ?
-                                           maxWidth + self.parentChildSpacing : 0.0,
-                                           0.5 * (selfTargetSize.height - nodeViewSize.height));
+        nodeViewFrame.origin = CGPointMake(0.5 * (selfTargetSize.width - nodeViewSize.width), 0.0f);
         self.nodeView.frame  = nodeViewFrame;
         
         // *** DECORATION VIEW *** //
 		if(self.decorationsView) {
-			CGFloat decorationViewWidth = self.parentChildSpacing;
-			CGFloat decorationViewX     = nodeViewSize.width;
+			CGFloat decorationViewHeight = self.parentChildSpacing;
+			CGFloat decorationViewY      = nodeViewSize.height;
 			
 			if(self.invertedLayout) {
-				decorationViewX = self.alignChildren ? minWidth : maxWidth;
+				decorationViewY = self.alignChildren ? minHeight : maxHeight;
 			}
 			
 			if(self.alignChildren) {
-				decorationViewWidth = self.frame.size.width - nodeViewSize.width - minWidth;
+				decorationViewHeight = self.frame.size.height - nodeViewSize.height - minHeight;
 			}
 			
-			CGRect decorationsViewFrame = CGRectMake(decorationViewX,
-													 0.0,
-													 decorationViewWidth,
-													 selfTargetSize.height);
+			CGRect decorationsViewFrame = CGRectMake(0.0f, decorationViewY, selfTargetSize.width, decorationViewHeight);
 			self.decorationsView.frame  = decorationsViewFrame;
 			
 			self.decorationsView.hidden                 = false;
@@ -194,9 +191,7 @@
         // *** NODE VIEW *** //
         selfTargetSize          = nodeViewSize;
         
-        nodeViewFrame.origin    = CGPointMake(self.invertedLayout ?
-                                              maxWidth + self.parentChildSpacing : 0.0,
-                                              0.0);
+        nodeViewFrame.origin    = CGPointMake(0.0f, 0.0);
         self.frame              = nodeViewFrame;
     }
     

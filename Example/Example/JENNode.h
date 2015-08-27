@@ -11,6 +11,7 @@
 
 @interface JENNode : NSObject<JENTreeViewModelNode>
 
+@property (nonatomic, strong) NSObject <JENTreeViewModelNode>* parent;
 @property (nonatomic, strong) NSSet *children;
 @property (nonatomic, strong) NSString *name;
 

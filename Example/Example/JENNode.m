@@ -10,4 +10,11 @@
 
 @implementation JENNode
 
+- (void)setChildren:(NSSet *)children {
+    _children = children;
+    for (NSObject<JENTreeViewModelNode>* eachChild in children) {
+        eachChild.parent = self;
+    }
+}
+
 @end

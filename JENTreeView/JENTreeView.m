@@ -147,13 +147,10 @@
 	UIView<JENDecorationView> *decorationView = nil;
 	
 	if([self.dataSource respondsToSelector:@selector(treeView:decorationViewForModelNode:)]) {
-		decorationView = [self.dataSource treeView:self
-						decorationViewForModelNode:modelNode];
+		decorationView = [self.dataSource treeView:self decorationViewForModelNode:modelNode];
 	}
     
-    JENSubtreeView *subtreeView     = [[JENSubtreeView alloc]
-                                       initWithNodeView:nodeView
-                                       decorationView:decorationView];
+    JENSubtreeView *subtreeView     = [[JENSubtreeView alloc] initWithNodeView:nodeView decorationView:decorationView];
     
     subtreeView.alignChildren       = self.alignChildren;
     subtreeView.invertedLayout      = self.invertedLayout;
@@ -162,15 +159,15 @@
     subtreeView.showView            = self.showSubviews;
     subtreeView.showViewFrame       = self.showSubviewFrames;
     
-    if(subtreeView) {
+    if (subtreeView) {
         [self setSubtreeView:subtreeView forModelNode:modelNode];
         
         NSArray *childModelNodes = [[modelNode children] allObjects];
         
-        for(id<JENTreeViewModelNode> childModelNode in childModelNodes) {
+        for (id<JENTreeViewModelNode> childModelNode in childModelNodes) {
             JENSubtreeView *childSubtreeView = [self buildGraphForModelNode:childModelNode];
             
-            if(childSubtreeView) {
+            if (childSubtreeView) {
                 [subtreeView addSubview:childSubtreeView];
             }
         }

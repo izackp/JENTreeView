@@ -15,10 +15,7 @@
     self = [super init];
     
     if(self) {
-        self.backgroundColor = [[UIColor alloc] initWithRed:1.0
-                                                      green:0.0
-                                                       blue:0.0
-                                                      alpha:0.0f];
+        self.backgroundColor = [[UIColor alloc] initWithRed:1.0 green:0.0 blue:0.0 alpha:0.0f];
     }
     
     return self;
@@ -26,45 +23,36 @@
 
 #pragma mark Properties
 
--(void)setShowViewFrame:(BOOL)showViewFrame {
-    if(_showViewFrame != showViewFrame) {
-        _showViewFrame = showViewFrame;
-        
-        if(self.layer) {
-            self.layer.borderWidth = showViewFrame ? 1.0f : 0.0f;
-            self.layer.borderColor  = [UIColor redColor].CGColor;
-        }
+- (void)setShowViewFrame:(BOOL)showViewFrame {
+    if (_showViewFrame == showViewFrame)
+        return;
+    
+    _showViewFrame = showViewFrame;
+    
+    if (self.layer) {
+        self.layer.borderWidth = showViewFrame ? 1.0f : 0.0f;
+        self.layer.borderColor = [UIColor redColor].CGColor;
     }
 }
 
--(void)setShowView:(BOOL)showView {
-    if(_showView != showView) {
-        _showView = showView;
-        
-        float alpha = showView ? 0.2f : 0.0f;
-        self.backgroundColor = [[UIColor alloc] initWithRed:1.0
-                                                      green:0.0
-                                                       blue:0.0
-                                                      alpha:alpha];
-    }
+- (void)setShowView:(BOOL)showView {
+    if (_showView == showView)
+        return;
+    
+    _showView = showView;
+    
+    float alpha = showView ? 0.2f : 0.0f;
+    self.backgroundColor = [[UIColor alloc] initWithRed:1.0 green:0.0 blue:0.0 alpha:alpha];
 }
 
 - (UIBezierPath*)directConnectionsPath {
-    CGPoint rootPoint   = CGPointMake(self.invertedLayout ?
-                                      self.bounds.size.width :
-                                      0.0,
-                                      CGRectGetMidY(self.bounds));
-    
+    CGPoint rootPoint   = CGPointMake(CGRectGetMidX(self.bounds), 0.0f);
     UIBezierPath *path  = [UIBezierPath bezierPath];
     
-    if([self.superview isKindOfClass:[JENSubtreeView class]]) {
-        for(UIView *subview in [self.superview subviews]) {
-            if([subview isKindOfClass:[JENSubtreeView class]]) {
-                CGPoint targetPoint = [self convertPoint:CGPointMake(self.invertedLayout ?
-                                                                     subview.bounds.size.width :
-                                                                     subview.bounds.origin.x,
-                                                                     CGRectGetMidY(subview.bounds))
-                                                fromView:subview];
+    if ([self.superview isKindOfClass:[JENSubtreeView class]]) {
+        for (UIView *subview in [self.superview subviews]) {
+            if ([subview isKindOfClass:[JENSubtreeView class]]) {
+                CGPoint targetPoint = [self convertPoint:CGPointMake(CGRectGetMidX(subview.bounds), subview.bounds.origin.y) fromView:subview];
                 
                 [path moveToPoint:rootPoint];
                 [path addLineToPoint:targetPoint];
@@ -76,38 +64,27 @@
 
 - (UIBezierPath*)orthogonalConnectionsPath {
     
-    CGPoint rootPoint           = CGPointMake(self.invertedLayout ?
-                                              self.bounds.size.width :
-                                              0.0,
-                                              CGRectGetMidY(self.bounds));
-    
-    CGPoint rootIntersection    = CGPointMake(self.invertedLayout ?
-                                              self.bounds.size.width - (self.parentChildSpacing / 2) :
-                                              0.0 + (self.parentChildSpacing / 2),
-                                              CGRectGetMidY(self.bounds));
+    CGPoint rootPoint           = CGPointMake(CGRectGetMidX(self.bounds), 0.0f);
+    CGPoint rootIntersection    = CGPointMake(CGRectGetMidX(self.bounds), 0.0 + (self.parentChildSpacing / 2));
     
     UIBezierPath *path          = [UIBezierPath bezierPath];
     NSInteger subtreeViewCount  = 0;
-    CGFloat minY                = rootPoint.y;
-    CGFloat maxY                = rootPoint.y;
+    CGFloat minX                = rootPoint.x;
+    CGFloat maxX                = rootPoint.x;
     
-    if([self.superview isKindOfClass:[JENSubtreeView class]]) {
-        for(UIView *subview in [self.superview subviews]) {
-            if([subview isKindOfClass:[JENSubtreeView class]]) {
+    if ([self.superview isKindOfClass:[JENSubtreeView class]]) {
+        for (UIView *subview in [self.superview subviews]) {
+            if ([subview isKindOfClass:[JENSubtreeView class]]) {
                 ++subtreeViewCount;
                 
                 CGRect subviewBounds    = [subview bounds];
-                CGPoint targetPoint     = [self convertPoint:CGPointMake(self.invertedLayout ?
-                                                                         subviewBounds.size.width :
-                                                                         subviewBounds.origin.x,
-                                                                         CGRectGetMidY(subviewBounds))
-                                                    fromView:subview];
+                CGPoint targetPoint     = [self convertPoint:CGPointMake(CGRectGetMidX(subviewBounds), subviewBounds.origin.y) fromView:subview];
                 
-                [path moveToPoint:CGPointMake(rootIntersection.x, targetPoint.y)];
+                [path moveToPoint:CGPointMake(targetPoint.x, rootIntersection.y)];
                 [path addLineToPoint:targetPoint];
                 
-                minY = MIN(minY, targetPoint.y);
-                maxY = MAX(maxY, targetPoint.y);
+                minX = MIN(minX, targetPoint.x);
+                maxX = MAX(maxX, targetPoint.x);
             }
         }
     }
@@ -115,8 +92,8 @@
     if (subtreeViewCount) {
         [path moveToPoint:rootPoint];
         [path addLineToPoint:rootIntersection];
-        [path moveToPoint:CGPointMake(rootIntersection.x, minY - 0.5)];
-        [path addLineToPoint:CGPointMake(rootIntersection.x, maxY + 0.5)];
+        [path moveToPoint:CGPointMake(minX - 0.5, rootIntersection.y)];
+        [path addLineToPoint:CGPointMake(maxX + 0.5, rootIntersection.y)];
     }
     
     return path;
